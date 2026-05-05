@@ -1,0 +1,19 @@
+{
+  "_comment": "Template registry for codesys-modifier skill. Add one entry per product.",
+  "templates": {
+    "pdm360": {
+      "description": "IFM PDM360 panel project base",
+      "project": "C:\\templates\\pdm360_base.project",
+      "codesys_profile": "CODESYS V3.5 SP17 Patch 20"
+    },
+    "cr0403": {
+      "description": "IFM CR0403 compact controller base",
+      "project": "C:\\templates\\cr0403_base.project",
+      "codesys_profile": "CODESYS V3.5 SP17 Patch 20"
+    }
+  },
+  "defaults": {
+    "workspace_root": "C:\\codesys-workspaces",
+    "codesys_exe": "C:\\Program Files\\CODESYS 3.5.17.20\\CODESYS\\Common\\CODESYS.exe"
+  }
+}
