@@ -111,10 +111,8 @@ When the user asks to modify a CODESYS project, follow these steps:
 1. **Determine template** — ask which product/template to use, or check `templates.json`
 2. **Create workspace** — run `setup_workspace.py <template> <workspace_name>`
 3. **Generate modify.py** — write the XML modification code into `scripts/modify.py` based on what the user wants changed (ST body, VAR declaration, task config, etc.). Use helper functions already in the file and `references/xml-schema.md` for node paths.
-4. **Run `run.bat`** from the skill root directory (CWD matters — paths in the batch are relative)
+4. **Run `run.bat <template> <workspace_name> [gateway_ip]`** from the skill root directory (CWD matters — paths in the batch are relative). Omit `gateway_ip` to build only, without downloading.
 5. **Report results** — show build output and confirm download if gateway was specified
-
-If the user only wants to build without downloading, omit the gateway IP argument to `import_deploy.py`.
 
 **Note on paths with spaces:** `--scriptargs` uses `|` as separator between arguments (not space). This is already handled in `export.py`, `import_deploy.py`, and `run.bat`.
 
@@ -206,64 +204,14 @@ This:
 
 ### 4. Full orchestration batch with template support
 
-```bat
-@echo off
-setlocal enabledelayedexpansion
-
-set TEMPLATE=%1
-set WORKSPACE_NAME=%2
-
-if "%TEMPLATE%"=="" (
-    echo Usage: run.bat ^<template^> ^<workspace_name^>
-    echo.
-    python scripts\setup_workspace.py --list
-    exit /b 1
-)
-
-:: Setup workspace and capture output variables
-for /f "tokens=1,2 delims==" %%A in ('python scripts\setup_workspace.py %TEMPLATE% %WORKSPACE_NAME%') do (
-    set %%A=%%B
-)
-
-if not defined PROJECT_PATH (
-    echo ERROR: setup_workspace.py failed.
-    exit /b 1
-)
-
-echo Workspace : %WORKSPACE_NAME%
-echo Project   : %PROJECT_PATH%
-echo Profile   : %CODESYS_PROFILE%
-echo.
-
-:: Step 1 - Export project to XML
-set XML_PATH=%WORKSPACE%\export.xml
-start /b /wait "%CODESYS_EXE%" --noUI --profile="%CODESYS_PROFILE%" ^
-    --runscript="%~dp0scripts\export.py" ^
-    --scriptargs="%PROJECT_PATH%|%XML_PATH%"
-if errorlevel 1 goto :error
-
-:: Step 2 - Modify XML (CPython)
-python "%~dp0scripts\modify.py" "%XML_PATH%" "%XML_PATH%"
-if errorlevel 1 goto :error
-
-:: Step 3 - Import + build + download
-start /b /wait "%CODESYS_EXE%" --noUI --profile="%CODESYS_PROFILE%" ^
-    --runscript="%~dp0scripts\import_deploy.py" ^
-    --scriptargs="%PROJECT_PATH%|%XML_PATH%"
-if errorlevel 1 goto :error
-
-echo Done.
-exit /b 0
-
-:error
-echo FAILED.
-exit /b 1
-```
+`run.bat` (skill root) runs the full export → modify → import/build/download
+pipeline. Third argument (gateway IP) is optional — omit it to build only,
+without downloading to a PLC.
 
 **Usage:**
 ```bat
 run.bat pdm360 MyProject_v2
-run.bat cr0403 AnotherProject
+run.bat cr0403 AnotherProject 192.168.1.10
 ```
 
 ### Adding a new template
