@@ -33,8 +33,8 @@ def load_registry(path: Path) -> dict:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("template", help="Template name from registry (e.g. pdm360)")
-    parser.add_argument("workspace_name", help="Name for the new workspace folder")
+    parser.add_argument("template", nargs="?", help="Template name from registry (e.g. pdm360)")
+    parser.add_argument("workspace_name", nargs="?", help="Name for the new workspace folder")
     parser.add_argument("--registry", default=str(DEFAULT_REGISTRY))
     parser.add_argument("--list", action="store_true", help="List available templates and exit")
     args = parser.parse_args()
@@ -47,6 +47,9 @@ def main():
             print(f"  {name:20s} — {meta['description']}")
             print(f"  {'':20s}   project: {meta['project']}")
         sys.exit(0)
+
+    if not args.template or not args.workspace_name:
+        parser.error("the following arguments are required: template, workspace_name")
 
     templates = registry["templates"]
     defaults = registry["defaults"]
