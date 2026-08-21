@@ -10,8 +10,13 @@ GATEWAY_IP   = args[2] if len(args) > 2 else None
 proj = projects.open(PROJECT_PATH)
 app  = proj.active_application
 
-# Import modified XML — replaces matching objects by name
-proj.import_xml(MODIFIED_XML)
+try:
+    # Import modified XML — replaces matching objects by name
+    proj.import_xml(MODIFIED_XML)
+except Exception as e:
+    system.write_message(Severity.Error, "Import failed: " + str(e))
+    proj.close()
+    raise
 
 proj.save()
 
