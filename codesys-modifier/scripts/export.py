@@ -1,5 +1,6 @@
 # export.py — IronPython, run via: CODESYS.exe --noUI --runscript="scripts\export.py"
-# --scriptargs="<project_path> <xml_output_path>"
+# --scriptargs="<project_path>|<xml_output_path>"
+# Paths separated by | to handle spaces in directory names.
 
 args = system.get_scriptargs().split("|")
 PROJECT_PATH = args[0].strip()
@@ -21,13 +22,19 @@ class Reporter(ExportReporter):
 proj = projects.open(PROJECT_PATH)
 reporter = Reporter()
 
-# declarations_as_plaintext=True preserves ST/VAR text losslessly as CDATA
-proj.export_xml(
-    reporter,
-    proj.get_children(recursive=True),
-    EXPORT_PATH,
-    recursive=True,
-    declarations_as_plaintext=True,
-)
-proj.close()
-system.write_message(Severity.Information, "Export done: " + EXPORT_PATH)
+try:
+    # declarations_as_plaintext=True preserves ST/VAR text losslessly as CDATA
+    proj.export_xml(
+        reporter,
+        proj.get_children(recursive=True),
+        EXPORT_PATH,
+        recursive=True,
+        declarations_as_plaintext=True,
+    )
+except Exception as e:
+    system.write_message(Severity.Error, "Export failed: " + str(e))
+    proj.close()
+    raise
+else:
+    proj.close()
+    system.write_message(Severity.Information, "Export done: " + EXPORT_PATH)
