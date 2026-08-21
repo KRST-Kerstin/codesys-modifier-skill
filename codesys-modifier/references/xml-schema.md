@@ -206,8 +206,19 @@ CODESYS stores it in `<addData>` as a proprietary extension:
 </addData>
 ```
 
-XPath (no NS needed, addData is unnamespaced in CODESYS exports):
-`.//addData/data[@name='http://www.3s-software.com/plcopenxml/devicedescription']//Task`
+XPath: `.//addData/data[@name='http://www.3s-software.com/plcopenxml/devicedescription']//Task`
+
+**Verify before relying on this:** whether `<addData>` and its children inherit
+the default PLCopen namespace from their parent (the normal XML rule, since
+nothing here resets it with `xmlns=""`) or are truly unnamespaced is NOT
+confirmed against a real CODESYS export — treat the "unnamespaced" claim as
+unverified. `scripts/modify.py`'s `set_declaration()` now tries both the
+namespaced (`plc:addData/plc:data/plc:Declaration`) and un-namespaced path and
+raises/fails loudly if neither matches, rather than silently writing back an
+unmodified file. Do the same for any custom XPath you write against `<addData>`
+— confirm the actual namespace on a real export first (`python -c "import
+xml.etree.ElementTree as ET; print(ET.parse('export.xml').getroot()[0].tag)"`
+on a node inside `<addData>` will show you the true namespace, if any).
 
 **Caveat:** Task config round-trip via PLCopen XML is unreliable in some CODESYS
 versions — it may be placed as a duplicate branch on re-import. Prefer editing task
