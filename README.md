@@ -7,11 +7,11 @@ Gives Claude the ability to export a `.project` to PLCopen XML, modify ST code /
 ## What it does
 
 ```
-run.bat <template> <workspace_name>
+run.bat <template> <workspace_name> [gateway_ip]
   └─ setup_workspace.py    copies template .project to new workspace
   └─ export.py             CODESYS.exe --noUI → PLCopen XML
   └─ modify.py             CPython edits XML (ST, VAR, FBD, task config)
-  └─ import_deploy.py      CODESYS.exe --noUI → import + build + download
+  └─ import_deploy.py      CODESYS.exe --noUI → import + build + download (if gateway_ip given)
 ```
 
 ## Requirements
@@ -29,8 +29,8 @@ run.bat <template> <workspace_name>
 Or clone the repo and zip the folder manually:
 
 ```bat
-git clone https://github.com/your-username/claude-skill-codesys-modifier
-cd claude-skill-codesys-modifier
+git clone https://github.com/KRST-Kerstin/codesys-modifier-skill
+cd codesys-modifier-skill
 zip -r codesys-modifier.skill codesys-modifier/
 ```
 
@@ -79,6 +79,7 @@ Claude will generate the appropriate `modify.py` code, create the workspace, run
 codesys-modifier/
 ├── SKILL.md                      ← skill instructions for Claude
 ├── templates.json                ← user-maintained product template registry
+├── run.bat                       ← orchestrates export → modify → import/build/deploy
 ├── scripts/
 │   ├── setup_workspace.py        ← CPython: copy template to new workspace
 │   ├── export.py                 ← IronPython: export .project to XML
@@ -94,6 +95,7 @@ codesys-modifier/
 - `modify.py` is a template — Claude fills in the modification logic per request
 - Original template `.project` files are never modified (always copied first)
 - `run.bat` uses `%~dp0` for paths so it works regardless of CWD
+- `run.bat <template> <workspace_name> [gateway_ip]` — third argument is optional; omit it to build only, without downloading to a PLC
 
 ## References
 
